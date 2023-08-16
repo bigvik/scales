@@ -17,9 +17,10 @@ def test():
 
 def test_observer():
     print('Test Observer')
-    for x in range(5):
-        control.save_data([x, 100])
-        time.sleep(3)
+    for x in range(100,0,-20):
+        for y in range(0,100,20):
+            control.save_data([x, y])
+            time.sleep(1)
 
 if __name__=='__main__':
     test()

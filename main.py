@@ -48,13 +48,20 @@ class App(tk.Tk):
         self.button_add = tk.Button(self.frame1, text = 'Измерить', command=self.get_weight)
         self.button_add.pack(side=LEFT, padx=5, pady=5)
 
+    def switch_button_state(self):
+        if (self.button_add['state'] == tk.NORMAL): self.button_add['state'] = tk.DISABLED
+        else: self.button_add['state'] = tk.NORMAL
+
     def get_weight(self):
+        self.switch_button_state()
         thr1 = threading.Thread(target = test.test_observer)
         thr1.start()
 
     def set_label(self, data):
         print(f'Setting label to: {str(data[2])}')
-        self.label_brutto.config(text = 'Brutto: ' + str(data[2]))
+        self.label_brutto.config(text = 'Brutto: ' + str(data[1]))
+        self.label_tara.config(text = 'Tara: ' + str(data[2]))
+        self.label_netto.config(text = 'Netto: ' + str(data[3]))
 
 
 
