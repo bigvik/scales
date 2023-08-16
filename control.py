@@ -1,5 +1,5 @@
 #!/usr/bin/Python
-
+from __future__ import annotations
 import serial
 
 import time
@@ -10,12 +10,57 @@ from openpyxl import load_workbook
 import os
 import smtplib
 import cv2
+from abc import ABC, abstractmethod
+from typing import List
+
 
 
 import model
 
+ds = model.Datasaver(0)
+
+class Subject(ABC):
+
+	@abstractmethod
+	def attach(self, observer) -> None:
+		pass
+
+	@abstractmethod
+	def detach(self, observer) -> None:
+		pass
+
+	@abstractmethod
+	def notify(self) -> None:
+		pass
 
 
+class Annunsiator(Subject):
+	
+	_state: int = 0
+	_observers: List = []
+	_weight : List = []
+
+	def attach(self, observer) -> None:
+		self._observers.append(observer)
+
+	def detach(self, observer) -> None:
+		self._observers.remove(observer)
+
+	def notify(self) -> None:
+
+		for observer in self._observers:
+			observer.update(self)
+		print('Notify')
+
+	def set_changes(self, weight) -> None:
+		print('Annunsiator set changes')
+		self._state += 1
+		self._weight = weight
+		print(f'{self._state} -> {self._weight}')
+		self.notify()
+
+
+anons = Annunsiator()
 
 def print_doc():
 	os.startfile(r"c:\Users\Kolomna\Documents\SV\Vesy\Print_doc.xlsx", 'print')
@@ -29,7 +74,7 @@ def make_foto(dt):
 	cv2.imwrite(path, f)
 	
 
-def send_email(x):
+def send_email():
 	pass
 
 
@@ -45,9 +90,10 @@ def preparation_data(weight):
 
 def save_data(weight):
 
-	ds = model.Datasaver(0)
 	ds.set_data(preparation_data(weight))
 	ds.save_data()
+	print('Data saved')
+	anons.set_changes(preparation_data(weight))
 
 #@snoop
 def open_serial():

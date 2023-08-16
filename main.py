@@ -1,5 +1,26 @@
 import tkinter as tk
 from tkinter import Frame, BOTH, X, N, LEFT, RIGHT
+from abc import ABC, abstractmethod
+
+import control
+import test
+
+
+class Observer(ABC):
+
+    @abstractmethod
+    def update(self, subject) -> None:
+
+        pass
+
+
+
+class Listener(Observer):
+
+    def update(self, subject):
+        print(subject._weight)
+        App.set_label(app, subject._weight)
+
 
 class App(tk.Tk):
 	
@@ -27,10 +48,16 @@ class App(tk.Tk):
         self.button_add.pack(side=LEFT, padx=5, pady=5)
 
     def get_weight(self):
-        self.label_brutto.config(text = 'Brutto: ' + str(self.x))
-        self.x += 1
+        test.test_observer()
+
+    def set_label(self, data):
+        print(f'Setting label to: {str(data[1])}')
+        self.label_brutto.config(text = 'Brutto: ' + str(data[1]))
+
 
 
 if __name__ == "__main__":
     app = App()
+    lis = Listener()
+    control.anons.attach(lis)
     app.mainloop()

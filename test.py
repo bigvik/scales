@@ -15,6 +15,11 @@ def test():
     for x in range(5):
         control.save_data([x, 100])
 
+def test_observer():
+    print('Test Observer')
+    for x in range(5):
+        control.save_data([x, 100])
+        time.sleep(3)
 
 if __name__=='__main__':
     test()
