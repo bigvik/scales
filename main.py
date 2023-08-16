@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import Frame, BOTH, X, N, LEFT, RIGHT
 from abc import ABC, abstractmethod
+import threading
 
 import control
 import test
@@ -48,11 +49,12 @@ class App(tk.Tk):
         self.button_add.pack(side=LEFT, padx=5, pady=5)
 
     def get_weight(self):
-        test.test_observer()
+        thr1 = threading.Thread(target = test.test_observer)
+        thr1.start()
 
     def set_label(self, data):
-        print(f'Setting label to: {str(data[1])}')
-        self.label_brutto.config(text = 'Brutto: ' + str(data[1]))
+        print(f'Setting label to: {str(data[2])}')
+        self.label_brutto.config(text = 'Brutto: ' + str(data[2]))
 
 
 
