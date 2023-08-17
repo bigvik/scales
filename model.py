@@ -1,9 +1,15 @@
+'''Модуль сохранения данных.
+Класс Datasaver имеет методы set_data() и save_data()'''
+
+
 import sqlite3
 import config
 
 
 class Datasaver:
-
+    '''
+    Класс модели сохранения данных
+    '''
     def __init__(self, data) -> None:
         if data: self.data = data
         self.db = config.DB
@@ -12,6 +18,10 @@ class Datasaver:
         self.data = data
 
     def save_data(self):
+        '''
+        Сохраняет данные в xls или sqlite
+        в зависимости от настройки DB в файле config.py
+        '''
         destinations = {'xls':self.to_xls, 'sql':self.to_sql}
         destinations[self.db]()
 

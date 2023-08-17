@@ -1,4 +1,6 @@
-#!/usr/bin/Python
+'''Основной модуль. Controller'''
+
+
 from __future__ import annotations
 import serial
 
@@ -21,6 +23,8 @@ ds = model.Datasaver(0)
 
 class Subject(ABC):
 
+	'''Абстрактный оповещатель'''
+
 	@abstractmethod
 	def attach(self, observer) -> None:
 		pass
@@ -35,6 +39,8 @@ class Subject(ABC):
 
 
 class Annunsiator(Subject):
+
+	'''Конкретный оповещатель обновлений'''
 	
 	_state: int = 0
 	_observers: List = []
@@ -67,18 +73,19 @@ def print_doc():
 
 
 def make_foto(dt):
+
+	'''Делает фото взвешиваемого автомобиля'''
 	
 	stream = cv2.VideoCapture('rtsp://login:password@IP/')
 	r, f = stream.read()
 	path = f"c:/Users/Kolomna/Documents/SV/Vesy/foto_camera/{dt}.jpg"
 	cv2.imwrite(path, f)
-	
-
-def send_email():
-	pass
 
 
-def preparation_data(weight):
+def preparation_data(weight:list) -> tuple:
+
+	'''Подготавливает полученые данные для сохранения.
+	Получает список из двух элементов. Возвращает tuple из пяти'''
 
 	dt = datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S')
 	netto = weight[0] - weight[1]
@@ -89,6 +96,9 @@ def preparation_data(weight):
 
 
 def save_data(weight):
+
+	'''Сохраняет подготовленные в preparation_data данные через Datasaver.
+	Анонсирует изменения для Слушателей'''
 
 	ds.set_data(preparation_data(weight))
 	ds.save_data()
@@ -118,7 +128,9 @@ def open_serial():
 
 
 def rule_lamp():
-	#управление реле
+
+	'''Через реле включает и выключает лампочку'''
+
 	lamp = serial.Serial(
 		port = 'COM7',
 		baudrate = 9600,
@@ -132,13 +144,18 @@ def rule_lamp():
 
 
 def end_weighting():
+
+	'''Вызывается при завершении взвешивания'''
+
 	dt = datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S')
 	make_foto(dt)
 	rule_lamp()
 
 #@snoop
 def get_weight(ser):
-	#фиксация веса
+	
+	'''Базовая функция для измерения веса. Редактируется только SV4618'''
+
 	weight_list = []
 	try:
 		while True:

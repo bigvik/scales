@@ -9,6 +9,7 @@ import test
 
 
 class Observer(ABC):
+    '''Абстрактный слушатель'''
 
     @abstractmethod
     def update(self, subject) -> None:
@@ -18,6 +19,7 @@ class Observer(ABC):
 
 
 class Listener(Observer):
+    '''Конкретный слушатель'''
 
     def update(self, subject):
         print(subject._weight)
@@ -25,6 +27,9 @@ class Listener(Observer):
 
 
 class App(tk.Tk):
+    '''
+    Класс визуального интерфейса tkinter
+    '''
 	
     def __init__(self) -> None:
         super().__init__()

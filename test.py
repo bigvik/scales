@@ -1,7 +1,12 @@
+'''Модуль для тестов'''
+
 import control
 import time
 
 def timer(function):
+    '''
+    Функция декоратор для измерения времени выполнения функции
+    '''
     def wrapped(*args):
         start_time = time.perf_counter()
         res = function(*args)
