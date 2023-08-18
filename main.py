@@ -54,8 +54,11 @@ class App(tk.Tk):
         self.label_netto = tk.Label(self.frame1, text='Netto:', width=10)
         self.label_netto.pack(side=LEFT, padx=5, pady=5)
 
-        self.button_add = tk.Button(self.frame1, text = 'Тестировать', command=self.get_weight)
+        self.button_add = tk.Button(self.frame1, text = 'Тестировать', command=self.get_testweight)
         self.button_add.pack(side=LEFT, padx=5, pady=5)
+
+        self.button_run = tk.Button(self.frame1, text = 'Запустить', command=self.get_weight)
+        self.button_run.pack(side=LEFT, padx=5, pady=5)
 
         cols = ('Date', 'Brutto', 'Netto', 'Tara', 'Dist')
         self.listBox = ttk.Treeview(self.frame2, columns=cols, show='headings')
@@ -68,10 +71,14 @@ class App(tk.Tk):
         if (self.button_add['state'] == tk.NORMAL): self.button_add['state'] = tk.DISABLED
         else: self.button_add['state'] = tk.NORMAL
 
-    def get_weight(self):
+    def get_testweight(self):
         self.switch_button_state()
         thr1 = threading.Thread(target = test.test_observer)
         thr1.start()
+
+    def get_weight():
+        thr = threading.Thread(target = control.open_serial)
+        thr.start()
 
     def set_label(self, data):
         print(f'Setting label to: {str(data[2])}')
