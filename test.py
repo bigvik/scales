@@ -21,11 +21,12 @@ def test():
         control.save_data([x, 100])
 
 def test_observer():
-    print('Test Observer')
+    control.anons.set_msg('Тестирование')
     for x in range(100,0,-20):
         for y in range(0,100,20):
             control.save_data([x, y])
             time.sleep(1)
+    control.anons.set_msg('Конец теста')
 
 if __name__=='__main__':
     test()

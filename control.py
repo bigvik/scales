@@ -43,6 +43,7 @@ class Annunsiator(Subject):
 	'''Конкретный оповещатель обновлений'''
 	
 	_state: int = 0
+	_msg: str = ''
 	_observers: List = []
 	_weight : List = []
 
@@ -63,6 +64,10 @@ class Annunsiator(Subject):
 		self._state += 1
 		self._weight = weight
 		print(f'{self._state} -> {self._weight}')
+		self.notify()
+
+	def set_msg(self, msg):
+		self._msg = msg
 		self.notify()
 
 
@@ -102,11 +107,12 @@ def save_data(weight):
 
 	ds.set_data(preparation_data(weight))
 	ds.save_data()
-	print('Data saved')
 	anons.set_changes(preparation_data(weight))
+	anons.set_msg('Сохранение данных')
 
 #@snoop
 def open_serial():
+	anons.set_msg('Подключение к порту')
 	try:
 		ser = serial.Serial(
 				port = 'COM5',
@@ -147,6 +153,7 @@ def end_weighting():
 
 	'''Вызывается при завершении взвешивания'''
 
+	anons.set_msg('Конец взвешивания')
 	dt = datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S')
 	make_foto(dt)
 	rule_lamp()
@@ -156,6 +163,7 @@ def get_weight(ser):
 	
 	'''Базовая функция для измерения веса. Редактируется только SV4618'''
 
+	anons.set_msg('Начало взвешивания')
 	weight_list = []
 	try:
 		while True:
