@@ -49,6 +49,8 @@ class Annunsiator(Subject):
 
 	def attach(self, observer) -> None:
 		self._observers.append(observer)
+		print(f'ADDed listener: {observer}')
+		print(self._observers)
 
 	def detach(self, observer) -> None:
 		self._observers.remove(observer)

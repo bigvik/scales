@@ -22,8 +22,9 @@ class Datasaver:
         Сохраняет данные в xls или sqlite
         в зависимости от настройки DB в файле config.py
         '''
-        destinations = {'xls':self.to_xls, 'sql':self.to_sql}
-        destinations[self.db]()
+        if self.data:
+            destinations = {'xls':self.to_xls, 'sql':self.to_sql}
+            destinations[self.db]()
 
     def to_xls(self):
         import os
