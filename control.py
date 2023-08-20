@@ -83,7 +83,7 @@ def make_foto(dt):
 	
 	stream = cv2.VideoCapture('rtsp://login:password@IP/')
 	r, f = stream.read()
-	path = f"c:/Users/Kolomna/Documents/SV/Vesy/foto_camera/{dt}.jpg"
+	path = f"photo/{dt}.jpg"
 	cv2.imwrite(path, f)
 
 

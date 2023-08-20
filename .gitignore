@@ -1,3 +1,6 @@
 __pycache__/
+photo/
+xlsx/
+*.jpg
 *.db
 *.xlsx

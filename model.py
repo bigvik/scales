@@ -26,11 +26,37 @@ class Datasaver:
         destinations[self.db]()
 
     def to_xls(self):
+        import os
+        if not os.path.isfile('measurements.xlsx'):
+            from openpyxl import Workbook
+            wb = Workbook()
+            wb.save('measurements.xlsx')
         from openpyxl import load_workbook
-        xl = load_workbook('weight_list.xlsx')
+        xl = load_workbook('measurements.xlsx')
         xl_sheet = xl.active
         xl_sheet.append(self.data)
-        xl.save('weight_list.xlsx')
+        xl.save('measurements.xlsx')
+
+    def to_xlsbydate(self, date):
+        print(date)
+        import os
+        if not os.path.isfile(f'xlsx/measurements_{date}.xlsx'):
+            from openpyxl import Workbook
+            wb = Workbook()
+            wb.save(f'xlsx/measurements_{date}.xlsx')
+        from openpyxl import load_workbook
+        con = sqlite3.connect('measurements.db')
+        cur = con.cursor()
+        cur.execute(
+            f"""SELECT date,brutto,netto,tara,dest FROM "weight" WHERE "date" LIKE "%{date}%" """
+        )
+        rows = cur.fetchall()
+        print(len(rows))
+        xl = load_workbook(f'xlsx/measurements_{date}.xlsx')
+        xl_sheet = xl.active
+        for row in rows:
+            xl_sheet.append(row)
+        xl.save(f'xlsx/measurements_{date}.xlsx')
 
     def to_sql(self):
         con = sqlite3.connect('measurements.db')

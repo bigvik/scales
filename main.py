@@ -72,8 +72,9 @@ class App(tk.Tk):
 
     def get_testweight(self):
         self.switch_button_state()
-        thr1 = threading.Thread(target = test.test_observer)
-        thr1.start()
+        thr = threading.Thread(target = test.test_observer)
+        thr.start()
+        self.switch_button_state()
 
     def get_weight():
         thr = threading.Thread(target = control.open_serial)
@@ -83,8 +84,12 @@ class App(tk.Tk):
         self.label_state.config(text = 'Состояние: ' + data._msg)
         self.listBox.insert("", "end", values=(data._weight))
 
-    def save():
-        pass
+    def save(self):
+        import datetime
+        date = datetime.datetime.now().strftime('%d.%m.%Y')
+        control.anons.set_msg(f'Сохранение в measurements_{date}.xlsx')
+        control.ds.to_xlsbydate(date)
+        control.anons.set_msg(f'measurements_{date}.xlsx сохранен в папке xlsx')
 
 
 
