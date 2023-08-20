@@ -25,7 +25,6 @@ def test_observer():
     for x in range(100,0,-20):
         for y in range(0,100,20):
             control.save_data([x, y])
-            time.sleep(1)
     control.anons.set_msg('Конец теста')
 
 if __name__=='__main__':

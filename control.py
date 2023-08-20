@@ -56,8 +56,9 @@ class Annunsiator(Subject):
 	def notify(self) -> None:
 
 		for observer in self._observers:
-			observer.update(self)
-		print('Notify')
+			observer.update([self._msg, self._weight])
+		print(f'Notify: {[self._msg, self._weight]}')
+		self._msg, self._weight = '', []
 
 	def set_changes(self, weight) -> None:
 		print('Annunsiator set changes')
@@ -94,6 +95,7 @@ def preparation_data(weight:list) -> tuple:
 
 	dt = datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S')
 	netto = weight[0] - weight[1]
+	if netto == 0: return ()
 	if netto > 0:
 		return (dt, weight[0], netto, weight[1], 'IN')
 	else:
@@ -130,7 +132,7 @@ def open_serial():
 				get_weight(ser)
 			time.sleep(1)
 	except OSError:
-		pass
+		anons.set_msg('ОШИБКА: Нет подключения к порту')
 
 
 def rule_lamp():

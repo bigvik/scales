@@ -22,7 +22,7 @@ class Listener(Observer):
     '''Конкретный слушатель'''
 
     def update(self, subject):
-        App.set_label(app, subject)
+        App.set_data(app, subject)
 
 
 class App(tk.Tk):
@@ -66,23 +66,26 @@ class App(tk.Tk):
         self.button_save = tk.Button(self.frame1, text = 'Сохранить', command=self.save)
         self.button_save.pack(side=LEFT, padx=5, pady=5)
 
-    def switch_button_state(self):
-        if (self.button_add['state'] == tk.NORMAL): self.button_add['state'] = tk.DISABLED
-        else: self.button_add['state'] = tk.NORMAL
+    def switch_button_state(self, bttn: tk.Button):
+        if (bttn['state'] == tk.NORMAL): bttn['state'] = tk.DISABLED
+        else: bttn['state'] = tk.NORMAL
+
+    def switch_bttns(self):
+        pass
 
     def get_testweight(self):
-        self.switch_button_state()
+        self.switch_button_state(self.button_add)
         thr = threading.Thread(target = test.test_observer)
         thr.start()
-        self.switch_button_state()
 
-    def get_weight():
+    def get_weight(self):
         thr = threading.Thread(target = control.open_serial)
         thr.start()
 
-    def set_label(self, data):
-        self.label_state.config(text = 'Состояние: ' + data._msg)
-        self.listBox.insert("", "end", values=(data._weight))
+    def set_data(self, data):
+        self.label_state.config(text = 'Состояние: ' + data[0])
+        if data[1]:
+            self.listBox.insert("", "end", values=(data[1]))
 
     def save(self):
         import datetime

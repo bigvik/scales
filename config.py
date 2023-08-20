@@ -1,1 +1,1 @@
-DB = 'xls' #DB could be xls or sql
+DB = 'sql' #DB could be xls or sql
