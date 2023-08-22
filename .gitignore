@@ -4,3 +4,6 @@ xlsx/
 *.jpg
 *.db
 *.xlsx
+.env
+secret.py
+*.log

@@ -14,8 +14,22 @@ import smtplib
 import cv2
 from abc import ABC, abstractmethod
 from typing import List
+import logging
 
-
+logger = logging.getLogger(__name__)
+# Create handlers
+s_handler = logging.StreamHandler()
+f_handler = logging.FileHandler('file.log')
+s_handler.setLevel(logging.WARNING)
+f_handler.setLevel(logging.ERROR)
+# Create formatters and add it to handlers
+s_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+s_handler.setFormatter(s_format)
+f_handler.setFormatter(f_format)
+# Add handlers to the logger
+logger.addHandler(s_handler)
+logger.addHandler(f_handler)
 
 import model
 
@@ -49,8 +63,7 @@ class Annunsiator(Subject):
 
 	def attach(self, observer) -> None:
 		self._observers.append(observer)
-		print(f'ADDed listener: {observer}')
-		print(self._observers)
+		logger.info(f'Added listener #{len(self._observers)}: {observer}')
 
 	def detach(self, observer) -> None:
 		self._observers.remove(observer)
@@ -59,14 +72,12 @@ class Annunsiator(Subject):
 
 		for observer in self._observers:
 			observer.update([self._msg, self._weight])
-		print(f'Notify: {[self._msg, self._weight]}')
+		logger.info(f'Notify: {[self._msg, self._weight]}')
 		self._msg, self._weight = '', []
 
 	def set_changes(self, weight) -> None:
-		print('Annunsiator set changes')
 		self._state += 1
 		self._weight = weight
-		print(f'{self._state} -> {self._weight}')
 		self.notify()
 
 	def set_msg(self, msg):
@@ -76,26 +87,24 @@ class Annunsiator(Subject):
 
 anons = Annunsiator()
 
-def print_doc():
-	os.startfile(r"c:\Users\Kolomna\Documents\SV\Vesy\Print_doc.xlsx", 'print')
 
-
-def make_foto(dt):
+def make_foto(name: str) -> None:
 
 	'''Делает фото взвешиваемого автомобиля'''
 	
 	stream = cv2.VideoCapture('rtsp://login:password@IP/')
 	r, f = stream.read()
-	path = f"photo/{dt}.jpg"
+	path = f"photo/{name}.jpg"
 	cv2.imwrite(path, f)
+	logger.info(f'Photo: {path}')
 
 
-def preparation_data(weight:list) -> tuple:
+def preparation_data(weight: list) -> tuple:
 
 	'''Подготавливает полученые данные для сохранения.
 	Получает список из двух элементов. Возвращает tuple из пяти'''
 
-	dt = datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+	dt = datetime.datetime.now().strftime('%d.%m.%Y %H.%M.%S')
 	netto = weight[0] - weight[1]
 	if netto == 0: return ()
 	if netto > 0:
@@ -153,13 +162,15 @@ def rule_lamp():
 	lamp.write(b'\x01\x05\x00\x00\x00\x00\xCD\xCA') #выключение
 
 
-def end_weighting():
+def end_weighting(w: int) -> None:
 
 	'''Вызывается при завершении взвешивания'''
 
 	anons.set_msg('Конец взвешивания')
-	dt = datetime.datetime.now().strftime('%d.%m.%Y %H:%M:%S')
-	make_foto(dt)
+	logger.info(f'Конец взвешивания: ({w})')
+	dt = datetime.datetime.now().strftime('%d.%m.%Y %H.%M.%S')
+	name = f'{dt} - ({w})'
+	make_foto(name)
 	rule_lamp()
 
 #@snoop
@@ -168,6 +179,7 @@ def get_weight(ser):
 	'''Базовая функция для измерения веса. Редактируется только SV4618'''
 
 	anons.set_msg('Начало взвешивания')
+	logger.info('Начало взвешивания')
 	weight_list = []
 	try:
 		while True:

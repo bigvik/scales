@@ -79,8 +79,8 @@ class App(tk.Tk):
         thr.start()
 
     def get_weight(self):
-        thr = threading.Thread(target = control.open_serial)
-        thr.start()
+        self.switch_button_state(self.button_run)
+        control.open_serial()
 
     def set_data(self, data):
         self.label_state.config(text = 'Состояние: ' + data[0])
