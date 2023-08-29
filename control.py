@@ -183,32 +183,32 @@ def get_weight(ser):
 	weight_list = []
 	try:
 		while True:
-			weight = int(str((ser.readline(8)[::-1][:-1]).decode("utf-8")))
+			weight = ser.readline(8)
 			
-			if weight > 0:
+			if weight > b'=0000000':
 
 				#for i in range(4):
 				#	tmp_weight = int(str((ser.readline(8)[::-1][:-1]).decode("utf-8")))
 				#	if tmp_weight == weight: continue
 
-				weight1 = abs(int(str((ser.readline(8)[::-1][:-1]).decode("utf-8"))))
+				weight1 = ser.readline(8)
 				if weight1 == weight:
-					weight2 = int(str((ser.readline(8)[::-1][:-1]).decode("utf-8")))
+					weight2 = ser.readline(8)
 					if weight2 == weight:
-						weight3 = int(str((ser.readline(8)[::-1][:-1]).decode("utf-8")))
+						weight3 = ser.readline(8)
 						if weight3 == weight:
-							weight4 = int(str((ser.readline(8)[::-1][:-1]).decode("utf-8")))
+							weight4 = ser.readline(8)
 							if weight4 == weight:
-								weight5 = int(str((ser.readline(8)[::-1][:-1]).decode("utf-8")))
+								weight5 = ser.readline(8)
 								if weight5 == weight:
 									ser.close()
 									time.sleep(3)
 									ser.open()
-									weight6 = int(str((ser.readline(8)[::-1][:-1]).decode("utf-8")))
+									weight6 = ser.readline(8)
 									if weight6 == weight5:
-
-										weight_list.append(weight6)
-										end_weighting()
+										weight7 = abs(int(str((ser.readline(8)[::-1][:-1]).decode("utf-8"))))
+										weight_list.append(weight7)
+										end_weighting(weight7)
 
 										if len(weight_list) == 2:
 
