@@ -11,17 +11,27 @@ cid = 0
 
 @bot.message_handler(commands=['test'])
 def testing(message):
-    if val := config.CHAT_IDS.get(message.text):
+    s = False
+    for k, v in config.CHAT_IDS.values():
+        send_msg(message.chat.id, f"{k} - {v}")
+        if v == message.chat.id:
+            s = True
+    if s:
         test.test_bot()
     else:
-        bot.reply_to(message, f"У вас не достаточно прав")
+        bot.reply_to(message, f"У вас ({message.chat.id}) не достаточно прав")
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    global cid
-    cid = message.chat.id
-    if cid == 169695840:
-        bot.reply_to(message, "Введите ваш PIN:")
+    s = False
+    for k, v in config.CHAT_IDS.values():
+        send_msg(message.chat.id, f"{k} - {v}")
+        if v == message.chat.id:
+            s = True
+    if s:
+        bot.reply_to(message, f"Привет, {k}")
+    else:
+        bot.reply_to(message, f"У вас ({message.chat.id}) не достаточно прав")
 
 @bot.message_handler(content_types=['text'])
 def handle_text(message):
@@ -30,8 +40,7 @@ def handle_text(message):
     else:
         bot.reply_to(message, f"Сообщение не распознано {message}")
 
-def send_msg(sub):
-     global cid
+def send_msg(cid, sub):
      bot.send_message(chat_id=cid, text=sub)
 
 
@@ -49,8 +58,8 @@ class BotListener(BotObserver):
 
     def update(self, subject):
         if subject[0]:
-            print(subject[0])
-            send_msg(subject[0])
+            for k, v in config.CHAT_IDS.values():
+                send_msg(v, subject[0])
 
 
 if __name__ == "__main__":
