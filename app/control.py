@@ -8,9 +8,7 @@ import time
 import datetime
 from openpyxl import Workbook
 from openpyxl import load_workbook
-#import snoop
-import os
-import smtplib
+
 import cv2
 from abc import ABC, abstractmethod
 from typing import List
@@ -19,7 +17,7 @@ import logging
 logger = logging.getLogger(__name__)
 # Create handlers
 s_handler = logging.StreamHandler()
-f_handler = logging.FileHandler('file.log')
+f_handler = logging.FileHandler('control.log')
 s_handler.setLevel(logging.WARNING)
 f_handler.setLevel(logging.ERROR)
 # Create formatters and add it to handlers
@@ -100,11 +98,11 @@ def write_serial():
         ser.port = 'COM4'
         ser.baudrate = 9600
         ser.open()
-        with open("log_brutto.txt", "rb") as f:
+        with open("test/log_brutto.txt", "rb") as f:
             while (byte := f.read(8)):
                 ser.write(byte)
         time.sleep(1)
-        with open("log_netto.txt", "rb") as f:
+        with open("test/log_netto.txt", "rb") as f:
             while (byte := f.read(8)):
                 ser.write(byte)
 
@@ -121,7 +119,6 @@ def read_serial():
             if bs != 0:
                 # if d == {}:
                 #     print(f'Start mesurement {c}')
-                #     start = time.perf_counter()
                 if d.get(bs):
                     d[bs] = d[bs] + 1
                 else:
@@ -134,10 +131,7 @@ def read_serial():
                     #print(f'Waiting mesurement {c}...')
                 else:
                     c = 1
-                    #print(f'Result: {prepare(e)}')
                     observer.set_changes(prepare(e))
-                    #stop = time.perf_counter()
-                    #print(f'Время выполнения: {stop-start}')
                     e.clear()
 
 def make_foto(name: str) -> None:

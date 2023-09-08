@@ -3,7 +3,7 @@
 
 
 import sqlite3
-import config
+import app.config as config
 
 
 class Datasaver:

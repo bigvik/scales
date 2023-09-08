@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 import cv2
 import threading
@@ -9,14 +8,15 @@ import datetime
 import logging
 from abc import ABC, abstractmethod
 
-import control
+import app.control as control
+import app.config as config
 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # Create handlers
 s_handler = logging.StreamHandler()
-f_handler = logging.FileHandler('log.log')
+f_handler = logging.FileHandler('view.log')
 s_handler.setLevel(logging.WARNING)
 f_handler.setLevel(logging.ERROR)
 # Create formatters and add it to handlers
@@ -56,7 +56,11 @@ class ViewListener(Listener):
     '''Слушатель для визуального интерфейса'''
 
     def update(self, subject):
-        App.set_data(app, subject)
+        app.set_data(subject)
+
+
+lis = ViewListener()
+control.observer.attach(lis)
 
 
 class App(tk.Tk):
@@ -69,11 +73,16 @@ class App(tk.Tk):
         self.minsize(800, 500)
 
         #Camera
-        self.vid = cv2.VideoCapture(0)
+        self.vid = cv2.VideoCapture(config.VIDEO)
 
-        self.stopEvent = threading.Event()
         self.thread = threading.Thread(target=self.open_camera)
+        self.thread.daemon = True
         self.thread.start()
+
+        #Serial
+        self.th = threading.Thread(target=control.read_serial)
+        self.th.daemon = True
+        self.th.start()
 
         #Mainframe
         self.mainframe = Frame(self)
@@ -141,9 +150,8 @@ class App(tk.Tk):
     def run_test(self):
         '''Запускает тест'''
         
-        th = threading.Thread(target=control.read_serial)
-        th.start()
         th1 = threading.Thread(target=control.write_serial)
+        th1.daemon = True
         th1.start()
 
     def open_camera(self):
@@ -174,6 +182,10 @@ class App(tk.Tk):
 
         self.listBox.insert("", "end", values=data)
 
+    def switch_button_state(self, bttn: tk.Button):
+        if (bttn['state'] == tk.NORMAL): bttn['state'] = tk.DISABLED
+        else: bttn['state'] = tk.NORMAL
+
     def about(self):
         messagebox.showinfo("О программе","bigvik © 2023 on the way…")
 
@@ -181,9 +193,10 @@ class App(tk.Tk):
         self.stopEvent.set()
         self.quit()
 
+app = App()
+
+def main():
+    app.mainloop()
 
 if __name__ == "__main__":
-    app = App()
-    lis = ViewListener()
-    control.observer.attach(lis)
-    app.mainloop()
+    main()
