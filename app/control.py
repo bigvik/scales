@@ -6,13 +6,13 @@ import serial
 
 import time
 import datetime
-from openpyxl import Workbook
-from openpyxl import load_workbook
+
 
 import cv2
 from abc import ABC, abstractmethod
 from typing import List
 import logging
+
 
 logger = logging.getLogger(__name__)
 # Create handlers
@@ -29,9 +29,12 @@ f_handler.setFormatter(f_format)
 logger.addHandler(s_handler)
 logger.addHandler(f_handler)
 
+import app.config as config
 import app.model as model
+import app.view as view
 
 ds = model.Datasaver(0)
+
 
 class Observer(ABC):
 
@@ -51,36 +54,35 @@ class Observer(ABC):
 
 
 class ExecutiveObserver(Observer):
-
 	'''Конкретный оповещатель обновлений'''
 	
-	_state: int = 0
 	_msg: str = ''
 	_observers: List = []
 	_weight : List = []
 
 	def attach(self, observer) -> None:
 		self._observers.append(observer)
-		#logger.info(f'Added listener #{len(self._observers)}: {observer}')
 
 	def detach(self, observer) -> None:
 		self._observers.remove(observer)
 
 	def notify(self) -> None:
-
 		for observer in self._observers:
 			observer.update(self._weight)
-		#logger.info(f'Notify: {[self._msg, self._weight]}')
-		self._msg, self._weight = '', []
+		self._weight = []
+
+	def send_msg(self) -> None:
+		for observer in self._observers:
+			observer.message(self._msg)
+		self._msg = ''
 
 	def set_changes(self, weight) -> None:
-		self._state += 1
 		self._weight = weight
 		self.notify()
 
-	def set_msg(self, msg):
+	def set_msg(self, msg) -> None:
 		self._msg = msg
-		self.notify()
+		self.send_msg()
 
 
 observer = ExecutiveObserver()
@@ -93,7 +95,8 @@ def prepare(l:list) -> list:
               min(l),
               'IN' if l[0]>l[1] else 'OUT']
 
-def write_serial():
+
+def write_serial() -> None:
     with serial.Serial() as ser:
         ser.port = 'COM4'
         ser.baudrate = 9600
@@ -106,19 +109,22 @@ def write_serial():
             while (byte := f.read(8)):
                 ser.write(byte)
 
-def read_serial():
+
+def read_serial() -> None:
     c = 1
     d = {}
     e = []
     with serial.Serial() as ser:
-        ser.port = 'COM3'
-        ser.baudrate = 9600
+        ser.port = config.PORT
+        ser.baudrate = config.BAUD
         ser.open()
+        config.logger.info(f'Запущено прослушивание порта: {config.PORT}')
         while True:
             bs = int(ser.read(8)[::-1][:-1])
             if bs != 0:
-                # if d == {}:
-                #     print(f'Start mesurement {c}')
+                if d == {}:
+                    config.logger.info(f'Начато {c} измерение')
+                    view.app.make_photo()
                 if d.get(bs):
                     d[bs] = d[bs] + 1
                 else:
@@ -131,8 +137,9 @@ def read_serial():
                     #print(f'Waiting mesurement {c}...')
                 else:
                     c = 1
-                    observer.set_changes(prepare(e))
+                    save_data(prepare(e))
                     e.clear()
+
 
 def make_foto(name: str) -> None:
 
@@ -159,17 +166,17 @@ def preparation_data(weight: list) -> tuple:
 		return (dt, weight[1], abs(netto), weight[0], 'OUT')
 
 
-def save_data(weight):
+def save_data(data: list):
 
-	'''Сохраняет подготовленные в preparation_data данные через Datasaver.
+	'''Сохраняет данные через Datasaver.
 	Анонсирует изменения для Слушателей'''
 
-	ds.set_data(preparation_data(weight))
-	ds.save_data()
-	observer.set_changes(preparation_data(weight))
+	#ds.set_data(preparation_data(weight))
+	ds.save_data(data)
+	observer.set_changes(data)
 	observer.set_msg('Сохранение данных')
 
-#@snoop
+
 def open_serial():
 	observer.set_msg('Подключение к порту')
 	try:
@@ -219,7 +226,7 @@ def end_weighting(w: int) -> None:
 	make_foto(name)
 	rule_lamp()
 
-#@snoop
+
 def get_weight(ser):
 	
 	'''Базовая функция для измерения веса. Редактируется только SV4618'''
@@ -306,5 +313,4 @@ def get_weight(ser):
 
 
 if __name__ == "__main__":
-	
 	open_serial()

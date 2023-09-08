@@ -10,18 +10,19 @@ class Datasaver:
     '''
     Класс модели сохранения данных
     '''
-    def __init__(self, data) -> None:
-        if data: self.data = data
+    def __init__(self, data: list) -> None:
+        if data: self.data = tuple(data)
         self.db = config.DB
 
-    def set_data(self,data):
-        self.data = data
+    def set_data(self, data):
+        self.data = tuple(data)
 
-    def save_data(self):
+    def save_data(self, data):
         '''
         Сохраняет данные в xls или sqlite
         в зависимости от настройки DB в файле config.py
         '''
+        self.data = tuple(data)
         if self.data:
             destinations = {'xls':self.to_xls, 'sql':self.to_sql}
             destinations[self.db]()
@@ -65,13 +66,13 @@ class Datasaver:
         cur.execute("""CREATE TABLE IF NOT EXISTS weight(
                     id INTEGER PRIMARY KEY,
                     date TEXT,
-                    brutto INT,
                     netto INT,
+                    brutto INT,
                     tara INT,
                     dest TEXT);
                     """)
         con.commit()
-        cur.execute("INSERT INTO weight(date, brutto, netto, tara, dest) VALUES(?, ?, ?, ?, ?);", self.data)
+        cur.execute("INSERT INTO weight(date, netto, brutto, tara, dest) VALUES(?, ?, ?, ?, ?);", self.data)
         con.commit()
 
 

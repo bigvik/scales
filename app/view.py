@@ -12,51 +12,26 @@ import app.control as control
 import app.config as config
 
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-# Create handlers
-s_handler = logging.StreamHandler()
-f_handler = logging.FileHandler('view.log')
-s_handler.setLevel(logging.WARNING)
-f_handler.setLevel(logging.ERROR)
-# Create formatters and add it to handlers
-s_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-s_handler.setFormatter(s_format)
-f_handler.setFormatter(f_format)
-# Add handlers to the logger
-logger.addHandler(s_handler)
-logger.addHandler(f_handler)
-
-
-class LabelLogging(logging.Handler):
-    '''Класс для вывода логов в статусбар'''
-
-    def __init__(self, lbl) -> None:
-        logging.Handler.__init__(self)
-        self.lbl = lbl
-
-    def emit(self, record) -> None:
-        msg = self.format(record)
-        def set_log():
-            self.lbl.config(text=msg)
-        self.lbl.after(0, set_log)
-
-
 class Listener(ABC):
     '''Абстрактный слушатель'''
 
     @abstractmethod
     def update(self, subject) -> None:
+        pass
 
+    @abstractmethod
+    def message(self, subject) -> None:
         pass
 
 
 class ViewListener(Listener):
     '''Слушатель для визуального интерфейса'''
 
-    def update(self, subject):
+    def update(self, subject) -> None:
         app.set_data(subject)
+
+    def message(self, subject) -> None:
+        app.show_msg(subject)
 
 
 lis = ViewListener()
@@ -66,7 +41,7 @@ control.observer.attach(lis)
 class App(tk.Tk):
     '''Главный класс визуального интерфейса'''
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.title("Весы")
         self.geometry("1000x600+120+20")
@@ -93,7 +68,7 @@ class App(tk.Tk):
         self.config(menu=self.mainmenu)
         
         self.filemenu = Menu(self.mainmenu, tearoff=0)
-        self.filemenu.add_command(label="Открыть...", command=self.open_camera)
+        #self.filemenu.add_command(label="Открыть...", command=self.open_camera)
         #self.filemenu.add_command(label="Новый")
         #self.filemenu.add_command(label="Сохранить...")
         self.filemenu.add_command(label="Выход", command=self.onClose)
@@ -141,20 +116,20 @@ class App(tk.Tk):
         self.frame_stat.pack(side=tk.BOTTOM, fill=tk.X)
 
         #Set loggin to statusbar
-        lbl_handler = LabelLogging(self.statusbar)
+        lbl_handler = config.LabelLogging(self.statusbar)
         #lbl_handler.setLevel(logging.INFO)
         lbl_format = logging.Formatter('[%(levelname)s] - %(message)s - (%(asctime)s)')
         lbl_handler.setFormatter(lbl_format)
-        logger.addHandler(lbl_handler)
+        config.logger.addHandler(lbl_handler)
 
-    def run_test(self):
+    def run_test(self) -> None:
         '''Запускает тест'''
         
         th1 = threading.Thread(target=control.write_serial)
         th1.daemon = True
         th1.start()
 
-    def open_camera(self):
+    def open_camera(self) -> None:
         '''Видео с камеры'''
 
         _, self.frame = self.vid.read()
@@ -170,26 +145,29 @@ class App(tk.Tk):
         # Repeat the same process after every 10 seconds
         self.label.after(10, self.open_camera)
 
-    def make_photo(self):
+    def make_photo(self) -> None:
         '''Сохранить фото с камеры'''
 
         dt = datetime.datetime.now().strftime('%d.%m.%Y %H.%M.%S')
         cv2.imwrite(f"photo/{dt}.jpg", self.frame)
-        logger.info(f'Фото "{dt}.jpg" сохранено')
+        config.logger.info(f'Фото "{dt}.jpg" сохранено')
 
-    def set_data(self, data):
+    def set_data(self, data) -> None:
         '''Заполнение таблицы полученными значениями'''
 
         self.listBox.insert("", "end", values=data)
 
-    def switch_button_state(self, bttn: tk.Button):
+    def show_msg(self, msg: str) -> None:
+        self.statusbar.config(text=msg)
+
+    def switch_button_state(self, bttn: tk.Button) -> None:
         if (bttn['state'] == tk.NORMAL): bttn['state'] = tk.DISABLED
         else: bttn['state'] = tk.NORMAL
 
-    def about(self):
+    def about(self) -> None:
         messagebox.showinfo("О программе","bigvik © 2023 on the way…")
 
-    def onClose(self):
+    def onClose(self) -> None:
         self.stopEvent.set()
         self.quit()
 
