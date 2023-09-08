@@ -4,25 +4,9 @@ from tkinter import Frame, BOTH, X, N, LEFT, RIGHT
 from abc import ABC, abstractmethod
 import threading
 
-import control
-import test
-
-
-class Observer(ABC):
-    '''Абстрактный слушатель'''
-
-    @abstractmethod
-    def update(self, subject) -> None:
-
-        pass
-
-
-
-class Listener(Observer):
-    '''Конкретный слушатель'''
-
-    def update(self, subject):
-        App.set_data(app, subject)
+import app.control as control
+import test.test as test
+import app.view as view
 
 
 class App(tk.Tk):
@@ -94,10 +78,10 @@ class App(tk.Tk):
         control.ds.to_xlsbydate(date)
         control.anons.set_msg(f'measurements_{date}.xlsx сохранен в папке xlsx')
 
+def main():
+    app = view.App()
+    app.mainloop()
 
 
 if __name__ == "__main__":
-    app = App()
-    lis = Listener()
-    control.anons.attach(lis)
-    app.mainloop()
+    main()

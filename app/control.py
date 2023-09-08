@@ -31,11 +31,11 @@ f_handler.setFormatter(f_format)
 logger.addHandler(s_handler)
 logger.addHandler(f_handler)
 
-import model
+import app.model as model
 
 ds = model.Datasaver(0)
 
-class Subject(ABC):
+class Observer(ABC):
 
 	'''Абстрактный оповещатель'''
 
@@ -52,7 +52,7 @@ class Subject(ABC):
 		pass
 
 
-class Annunsiator(Subject):
+class ExecutiveObserver(Observer):
 
 	'''Конкретный оповещатель обновлений'''
 	
@@ -63,7 +63,7 @@ class Annunsiator(Subject):
 
 	def attach(self, observer) -> None:
 		self._observers.append(observer)
-		logger.info(f'Added listener #{len(self._observers)}: {observer}')
+		#logger.info(f'Added listener #{len(self._observers)}: {observer}')
 
 	def detach(self, observer) -> None:
 		self._observers.remove(observer)
@@ -71,8 +71,8 @@ class Annunsiator(Subject):
 	def notify(self) -> None:
 
 		for observer in self._observers:
-			observer.update([self._msg, self._weight])
-		logger.info(f'Notify: {[self._msg, self._weight]}')
+			observer.update(self._weight)
+		#logger.info(f'Notify: {[self._msg, self._weight]}')
 		self._msg, self._weight = '', []
 
 	def set_changes(self, weight) -> None:
@@ -85,8 +85,60 @@ class Annunsiator(Subject):
 		self.notify()
 
 
-anons = Annunsiator()
+observer = ExecutiveObserver()
 
+
+def prepare(l:list) -> list:
+    return [datetime.datetime.now().strftime('%d.%m.%Y %H.%M.%S'),
+              abs(l[0]-l[1]),
+              max(l),
+              min(l),
+              'IN' if l[0]>l[1] else 'OUT']
+
+def write_serial():
+    with serial.Serial() as ser:
+        ser.port = 'COM4'
+        ser.baudrate = 9600
+        ser.open()
+        with open("log_brutto.txt", "rb") as f:
+            while (byte := f.read(8)):
+                ser.write(byte)
+        time.sleep(1)
+        with open("log_netto.txt", "rb") as f:
+            while (byte := f.read(8)):
+                ser.write(byte)
+
+def read_serial():
+    c = 1
+    d = {}
+    e = []
+    with serial.Serial() as ser:
+        ser.port = 'COM3'
+        ser.baudrate = 9600
+        ser.open()
+        while True:
+            bs = int(ser.read(8)[::-1][:-1])
+            if bs != 0:
+                # if d == {}:
+                #     print(f'Start mesurement {c}')
+                #     start = time.perf_counter()
+                if d.get(bs):
+                    d[bs] = d[bs] + 1
+                else:
+                    d[bs] = 1
+            elif bs == 0 and d != {}:  
+                e.append(max(d, key=d.get))
+                d.clear()
+                if c == 1:
+                    c+=1
+                    #print(f'Waiting mesurement {c}...')
+                else:
+                    c = 1
+                    #print(f'Result: {prepare(e)}')
+                    observer.set_changes(prepare(e))
+                    #stop = time.perf_counter()
+                    #print(f'Время выполнения: {stop-start}')
+                    e.clear()
 
 def make_foto(name: str) -> None:
 
@@ -120,12 +172,12 @@ def save_data(weight):
 
 	ds.set_data(preparation_data(weight))
 	ds.save_data()
-	anons.set_changes(preparation_data(weight))
-	anons.set_msg('Сохранение данных')
+	observer.set_changes(preparation_data(weight))
+	observer.set_msg('Сохранение данных')
 
 #@snoop
 def open_serial():
-	anons.set_msg('Подключение к порту')
+	observer.set_msg('Подключение к порту')
 	try:
 		ser = serial.Serial(
 				port = 'COM5',
@@ -143,7 +195,7 @@ def open_serial():
 				get_weight(ser)
 			time.sleep(1)
 	except OSError:
-		anons.set_msg('ОШИБКА: Нет подключения к порту')
+		observer.set_msg('ОШИБКА: Нет подключения к порту')
 
 
 def rule_lamp():
@@ -166,7 +218,7 @@ def end_weighting(w: int) -> None:
 
 	'''Вызывается при завершении взвешивания'''
 
-	anons.set_msg('Конец взвешивания')
+	observer.set_msg('Конец взвешивания')
 	logger.info(f'Конец взвешивания: ({w})')
 	dt = datetime.datetime.now().strftime('%d.%m.%Y %H.%M.%S')
 	name = f'{dt} - ({w})'
@@ -178,7 +230,7 @@ def get_weight(ser):
 	
 	'''Базовая функция для измерения веса. Редактируется только SV4618'''
 
-	anons.set_msg('Начало взвешивания')
+	observer.set_msg('Начало взвешивания')
 	logger.info('Начало взвешивания')
 	weight_list = []
 	try:

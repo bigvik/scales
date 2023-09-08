@@ -1,6 +1,6 @@
 '''Модуль для тестов'''
 
-import control
+import app.control  as control
 import time
 
 def timer(function):

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 import control
 import config
-import test
+import test.test as test
 
 bot = telebot.TeleBot(config.BOT_TOKEN)
 cid = 0
